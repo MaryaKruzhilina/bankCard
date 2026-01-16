@@ -1,0 +1,84 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-01-16-create_table_cards
+      author: MaryKr
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            tableName: bank_card
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: owner_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pan_encrypted
+                  type: BYTEA
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pan_hash
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: pan_last4
+                  type: char(4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiry_month
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiry_year
+                  type: smallint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status_card
+                  type: varchar(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: balance
+                  type: NUMERIC(19, 2)
+                  defaultValueNumeric: 0.00
+                  constraints:
+                    nullable: false
+        - sql:
+            dbms: postgresql
+            splitStatements: true
+            sql: |
+              ALTER TABLE bank_card
+                ADD CONSTRAINT chk_bank_card_expiry_month
+                CHECK (expiry_month BETWEEN 1 AND 12);
+              
+              ALTER TABLE bank_card
+                ADD CONSTRAINT chk_bank_card_status
+                CHECK (status_card IN ('ACTIVE', 'BLOCKED', 'EXPIRED'));
+              
+              ALTER TABLE bank_card
+                ADD CONSTRAINT chk_bank_card_pan_last4
+                CHECK (pan_last4 ~ '^[0-9]{4}$');
+
+      rollback:
+        - sql:
+            dbms: postgresql
+            splitStatements: true
+            sql: |
+              ALTER TABLE bank_card DROP CONSTRAINT IF EXISTS chk_bank_card_pan_last4;
+              ALTER TABLE bank_card DROP CONSTRAINT IF EXISTS chk_bank_card_status;
+              ALTER TABLE bank_card DROP CONSTRAINT IF EXISTS chk_bank_card_expiry_month;
+
+        - dropTable:
+            tableName: bank_card
