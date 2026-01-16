@@ -24,3 +24,7 @@ spring:
 
   liquibase:
     change-log: classpath:db/migration/db.changelog-master.yaml
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET}

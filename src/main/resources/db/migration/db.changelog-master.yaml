@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: db/migration/changeset/2026-16-01-create-table-card.yaml
+  - include:
+      file: db/migration/changeset/2026-16-01-create-table-user.yaml
+  - include:
+      file: db/migration/changeset/002-add-users.sql
