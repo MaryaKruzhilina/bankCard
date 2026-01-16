@@ -47,10 +47,14 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
         }
 
+        authentication.getAuthorities()
+                .forEach(a -> System.out.println("AUTH: " + a.getAuthority()));
+
         // Превращаем authorities -> List<Role>
         // Ожидаем "ROLE_ADMIN", "ROLE_USER", ...
         List<Role> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
                 .map(a -> a.startsWith("ROLE_") ? a.substring("ROLE_".length()) : a)
                 .map(String::toUpperCase)
                 .map(Role::valueOf)

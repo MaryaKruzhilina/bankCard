@@ -12,7 +12,7 @@ public class User {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "hash_password", nullable = false)
     private String hashPassword;
 
     @Column(nullable = false, unique = true)
