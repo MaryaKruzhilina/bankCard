@@ -28,3 +28,8 @@ spring:
   security:
     jwt:
       secret: ${JWT_SECRET}
+
+card:
+  crypto:
+    aes-key-base64: "4NChuYrFKlRukuC57BOLpl6SaAk0gzs64+vAgdRALIE="
+    hash-pepper: ""
