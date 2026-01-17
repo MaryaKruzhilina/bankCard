@@ -21,12 +21,8 @@ public class TransactionalService {
     }
     @Transactional
     public void transfer(UUID ownerId, TransferRequest req) {
-        if (req.amount() == null || !(req.amount().compareTo(BigDecimal.ZERO) > 0)){
+        if (!(req.amount().compareTo(BigDecimal.ZERO) > 0)) {
             throw new InvalidTransferAmountException();
-        }
-
-        if (req.fromToCard() == null || req.toCard() == null) {
-            throw new IllegalArgumentException("Card id must not be null");
         }
 
         if (req.fromToCard().equals(req.toCard())){
