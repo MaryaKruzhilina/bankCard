@@ -9,13 +9,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: BIGSERIAL
+                  type: uuid
                   constraints:
                     nullable: false
                     primaryKey: true
               - column:
                   name: owner_id
-                  type: BIGINT
+                  type: uuid
                   constraints:
                     nullable: false
               - column:

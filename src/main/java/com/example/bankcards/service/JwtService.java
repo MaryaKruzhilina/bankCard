@@ -1,6 +1,6 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.entity.Role;
+import com.example.bankcards.entity.enums.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
