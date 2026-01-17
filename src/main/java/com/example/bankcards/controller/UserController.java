@@ -14,11 +14,6 @@ import java.util.Map;
 @RequestMapping("/api")
 public class UserController {
 
-    /**
-     * Проверка JWT:
-     * - без токена -> 401
-     * - с токеном -> покажет username + роли/authorities
-     */
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> me(Authentication authentication) {
 

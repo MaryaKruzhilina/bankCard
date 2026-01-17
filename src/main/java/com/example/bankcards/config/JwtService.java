@@ -1,4 +1,4 @@
-package com.example.bankcards.service;
+package com.example.bankcards.config;
 
 import com.example.bankcards.entity.enums.Role;
 import io.jsonwebtoken.Jwts;
