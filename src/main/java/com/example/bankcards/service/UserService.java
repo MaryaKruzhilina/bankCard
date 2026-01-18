@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,5 +37,12 @@ public class UserService implements UserDetailsService {
                 user.getHashPassword(),
                 authorities
         );
+    }
+    public UUID getIdByUsername(String username) {
+        return findByUsernameOrThrow(username).getId();
+    }
+    private User findByUsernameOrThrow(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 }

@@ -25,11 +25,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionalServiceTest {
+class TransferServiceTest {
     @Mock
     public CardRepository cardRepository;
     @InjectMocks
-    private TransactionalService transactionalService;
+    private TransferService transferService;
 
     UUID ownerId = UUID.randomUUID();
     UUID fromCardId = UUID.randomUUID();
@@ -55,7 +55,7 @@ class TransactionalServiceTest {
         Mockito.when(cardRepository.findByIdAndOwnerId(fromCardId, ownerId)).thenReturn(Optional.of(fromCard));
         Mockito.when(cardRepository.findByIdAndOwnerId(toCardId, ownerId)).thenReturn(Optional.of(toCard));
 
-        transactionalService.transfer(ownerId, req);
+        transferService.transfer(ownerId, req);
 
         ArgumentCaptor<Card> captorCard = ArgumentCaptor.forClass(Card.class);
 
@@ -91,7 +91,7 @@ class TransactionalServiceTest {
         TransferRequest req = new TransferRequest(fromCardId, toCardId, BigDecimal.valueOf(-10));
 
         InvalidTransferAmountException ex = assertThrows(InvalidTransferAmountException.class,
-                () -> transactionalService.transfer(ownerId, req)
+                () -> transferService.transfer(ownerId, req)
         );
 
         assertEquals("Amount must be > 0", ex.getMessage());
@@ -103,7 +103,7 @@ class TransactionalServiceTest {
         TransferRequest reqAmountZero = new TransferRequest(fromCardId, toCardId, BigDecimal.valueOf(0));
 
         InvalidTransferAmountException ex = assertThrows(InvalidTransferAmountException.class,
-                () -> transactionalService.transfer(ownerId, reqAmountZero));
+                () -> transferService.transfer(ownerId, reqAmountZero));
         assertEquals("Amount must be > 0", ex.getMessage());
     }
 
@@ -112,7 +112,7 @@ class TransactionalServiceTest {
     void shouldThrowExceptionWhenSourceAndDestinationCardsAreTheSame(){
         TransferRequest  req= new TransferRequest(fromCardId, fromCardId, BigDecimal.valueOf(100));
 
-        InvalidTransferToSameCardException ex = assertThrows(InvalidTransferToSameCardException.class, () -> transactionalService.transfer(ownerId, req));
+        InvalidTransferToSameCardException ex = assertThrows(InvalidTransferToSameCardException.class, () -> transferService.transfer(ownerId, req));
         assertEquals("Cannot transfer to the same card", ex.getMessage());
         verifyNoInteractions(cardRepository);
     }
@@ -124,7 +124,7 @@ class TransactionalServiceTest {
 
         Mockito.when(cardRepository.findByIdAndOwnerId(fromCardId, ownerId)).thenReturn(Optional.empty());
 
-        CardNotFoundException ex = assertThrows(CardNotFoundException.class, () -> transactionalService.transfer(ownerId, req));
+        CardNotFoundException ex = assertThrows(CardNotFoundException.class, () -> transferService.transfer(ownerId, req));
         assertEquals("Card not found", ex.getMessage());
     }
 
@@ -136,7 +136,7 @@ class TransactionalServiceTest {
         Mockito.when(cardRepository.findByIdAndOwnerId(fromCardId, ownerId)).thenReturn(Optional.of(fromCard));
         Mockito.when(cardRepository.findByIdAndOwnerId(toCardId, ownerId)).thenReturn(Optional.empty());
 
-        CardNotFoundException ex = assertThrows(CardNotFoundException.class, () -> transactionalService.transfer(ownerId, req));
+        CardNotFoundException ex = assertThrows(CardNotFoundException.class, () -> transferService.transfer(ownerId, req));
         assertEquals("Card not found", ex.getMessage());
     }
 
@@ -149,7 +149,7 @@ class TransactionalServiceTest {
         Mockito.when(cardRepository.findByIdAndOwnerId(fromCardId, ownerId)).thenReturn(Optional.of(fromCard));
         Mockito.when(cardRepository.findByIdAndOwnerId(toCardId, ownerId)).thenReturn(Optional.of(toCard));
 
-        CardNotActiveException ex = assertThrows(CardNotActiveException.class, () -> transactionalService.transfer(ownerId, req));
+        CardNotActiveException ex = assertThrows(CardNotActiveException.class, () -> transferService.transfer(ownerId, req));
         assertEquals("Card is not active: **** **** **** " + fromCard.getPanLastFourNumber(), ex.getMessage());
     }
 
@@ -162,7 +162,7 @@ class TransactionalServiceTest {
         Mockito.when(cardRepository.findByIdAndOwnerId(fromCardId, ownerId)).thenReturn(Optional.of(fromCard));
         Mockito.when(cardRepository.findByIdAndOwnerId(toCardId, ownerId)).thenReturn(Optional.of(toCard));
 
-        CardNotActiveException ex = assertThrows(CardNotActiveException.class, () -> transactionalService.transfer(ownerId, req));
+        CardNotActiveException ex = assertThrows(CardNotActiveException.class, () -> transferService.transfer(ownerId, req));
         assertEquals("Card is not active: **** **** **** " + toCard.getPanLastFourNumber(), ex.getMessage());
     }
 
@@ -174,7 +174,7 @@ class TransactionalServiceTest {
         Mockito.when(cardRepository.findByIdAndOwnerId(fromCardId, ownerId)).thenReturn(Optional.of(fromCard));
         Mockito.when(cardRepository.findByIdAndOwnerId(toCardId, ownerId)).thenReturn(Optional.of(toCard));
 
-        InsufficientFundsException ex = assertThrows(InsufficientFundsException.class, () -> transactionalService.transfer(ownerId, req));
+        InsufficientFundsException ex = assertThrows(InsufficientFundsException.class, () -> transferService.transfer(ownerId, req));
         assertEquals("Not enough money to card: **** **** **** " + fromCard.getPanLastFourNumber(), ex.getMessage());
     }
 

@@ -12,11 +12,11 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
-public class TransactionalService {
+public class TransferService {
 
     private final CardRepository cardRepository;
 
-    public TransactionalService(CardRepository cardRepository) {
+    public TransferService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
     }
     @Transactional

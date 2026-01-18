@@ -82,7 +82,7 @@ public class CardService {
 
     // запросить на блокировку
     @Transactional
-    public Card requestBlock(UUID ownerId, UUID cardId) {
+    public Card blockMyCard(UUID ownerId, UUID cardId) {
         Card card = cardRepository.findByIdAndOwnerId(cardId, ownerId)
                 .orElseThrow(CardNotFoundException::new);
 
@@ -113,10 +113,6 @@ public class CardService {
     @Transactional(readOnly = true)
     public Page<Card> adminGetAllByStatus(StatusCard status, Pageable pageable) {
         return cardRepository.findAllByStatus(status, pageable);
-    }
-
-    public String maskedPan(Card card) {
-        return "**** **** **** " + card.getPanLastFourNumber();
     }
 
     private String last4(String pan) {

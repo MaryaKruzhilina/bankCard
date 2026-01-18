@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -16,9 +17,11 @@ public class JwtService {
     @Value("${spring.security.jwt.secret}")
     private String secret;
 
-    public String generateToken(String username, List<Role> roles) {
+    private static final long EXPIRATION_MS = 60 * 60 * 1000;
+
+    public String generateToken(UUID userId, String username, List<Role> roles) {
         Date now = new Date();
-        Date exp = new Date(now.getTime() + 60 * 60 * 1000);
+        Date exp = new Date(now.getTime() + EXPIRATION_MS);
 
         List<String> roleNames = roles.stream()
                 .map(Role::name)
@@ -26,6 +29,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId.toString())
                 .claim("roles", roleNames)
                 .setIssuedAt(now)
                 .setExpiration(exp)

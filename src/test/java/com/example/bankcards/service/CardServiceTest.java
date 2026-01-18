@@ -202,7 +202,7 @@ class CardServiceTest {
         when(cardRepository.findByIdAndOwnerId(cardId, ownerId)).thenReturn(Optional.of(card));
         when(cardRepository.save(any(Card.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Card updated = cardService.requestBlock(ownerId, cardId);
+        Card updated = cardService.blockMyCard(ownerId, cardId);
 
         assertEquals(StatusCard.BLOCKED, updated.getStatus());
 
@@ -216,7 +216,7 @@ class CardServiceTest {
     void shouldThrowExceptionWhenBlockingRequestCardIsNotFound() {
         when(cardRepository.findByIdAndOwnerId(cardId, ownerId)).thenReturn(Optional.empty());
 
-        assertThrows(CardNotFoundException.class, () -> cardService.requestBlock(ownerId, cardId));
+        assertThrows(CardNotFoundException.class, () -> cardService.blockMyCard(ownerId, cardId));
 
         verify(cardRepository, times(1)).findByIdAndOwnerId(cardId, ownerId);
         verify(cardRepository, never()).save(any(Card.class));
@@ -288,17 +288,6 @@ class CardServiceTest {
         assertEquals(cardId, result.getContent().get(0).getId());
 
         verify(cardRepository, times(1)).findAllByStatus(StatusCard.ACTIVE, pageable);
-        verifyNoInteractions(panCryptoService);
-    }
-
-    @Test
-    @DisplayName("Should return masked PAN")
-    void shouldReturnMaskedPan() {
-        String masked = cardService.maskedPan(card);
-
-        assertEquals("**** **** **** 1234", masked);
-
-        verifyNoInteractions(cardRepository);
         verifyNoInteractions(panCryptoService);
     }
     private void stubClock() {
