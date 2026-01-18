@@ -96,21 +96,6 @@ public class SecurityConfig {
         return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-//        UserDetails admin = User.withUsername("admin")
-//                .password(encoder.encode("admin123"))
-//                .roles("ADMIN", "USER")
-//                .build();
-//
-//        UserDetails user = User.withUsername("user")
-//                .password(encoder.encode("user123"))
-//                .roles("USER")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(admin, user);
-//    }
-
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(
             UserDetailsService userDetailsService,
