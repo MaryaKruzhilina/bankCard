@@ -5,7 +5,8 @@ import com.example.bankcards.entity.enums.StatusCard;
 import com.example.bankcards.exception.CardAlreadyExistsException;
 import com.example.bankcards.exception.CardNotFoundException;
 import com.example.bankcards.repository.CardRepository;
-import com.example.bankcards.service.crypto.PanCryptoServiceImpl;
+import com.example.bankcards.util.PanCryptoServiceImpl;
+import com.example.bankcards.util.PanGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,8 @@ public class CardService {
 
     // admin. создать карту пользователю
     @Transactional
-    public Card create(UUID ownerId, String pan) {
+    public Card create(UUID ownerId) {
+        String pan = PanGenerator.generate();
         String panHash = panCryptoService.hash(pan);
 
         if (cardRepository.existsByPanHash(panHash)) {

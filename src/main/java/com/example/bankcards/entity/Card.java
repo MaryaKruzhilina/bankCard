@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
+@Table(name = "bank_card")
 public class Card {
 
     public Card() {

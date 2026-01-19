@@ -1,4 +1,4 @@
-package com.example.bankcards.service.crypto;
+package com.example.bankcards.util;
 
 public interface PanCryptoService {
     //без decrypt так как в ТЗ этого не требовалось

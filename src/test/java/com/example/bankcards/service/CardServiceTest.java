@@ -5,13 +5,15 @@ import com.example.bankcards.entity.enums.StatusCard;
 import com.example.bankcards.exception.CardAlreadyExistsException;
 import com.example.bankcards.exception.CardNotFoundException;
 import com.example.bankcards.repository.CardRepository;
-import com.example.bankcards.service.crypto.PanCryptoServiceImpl;
+import com.example.bankcards.util.PanCryptoServiceImpl;
+import com.example.bankcards.util.PanGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,11 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CardServiceTest {
@@ -82,59 +80,72 @@ class CardServiceTest {
     @Test
     @DisplayName("Should create card successfully")
     void shouldCreateCardSuccessfully() {
+        // given
         String pan = "4111111111111234";
         String panHash = "hash_pan";
         byte[] encrypted = new byte[]{1, 2, 3};
 
-        when(panCryptoService.hash(pan)).thenReturn(panHash);
-        when(cardRepository.existsByPanHash(panHash)).thenReturn(false);
-        when(panCryptoService.encrypt(pan)).thenReturn(encrypted);
-        when(cardRepository.save(any(Card.class))).thenAnswer(inv -> inv.getArgument(0));
+        stubClock(); // fixedClock = 2026-01-17 => expiryMonth=1, expiryYear=2031
 
-        stubClock();
+        try (MockedStatic<PanGenerator> panGeneratorMock = mockStatic(PanGenerator.class)) {
+            panGeneratorMock.when(PanGenerator::generate).thenReturn(pan);
 
-        Card created = cardService.create(ownerId, pan);
+            when(panCryptoService.hash(pan)).thenReturn(panHash);
+            when(cardRepository.existsByPanHash(panHash)).thenReturn(false);
+            when(panCryptoService.encrypt(pan)).thenReturn(encrypted);
+            when(cardRepository.save(any(Card.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        ArgumentCaptor<Card> captor = ArgumentCaptor.forClass(Card.class);
-        verify(cardRepository, times(1)).save(captor.capture());
+            // when
+            Card created = cardService.create(ownerId);
 
-        Card saved = captor.getValue();
+            // then
+            ArgumentCaptor<Card> captor = ArgumentCaptor.forClass(Card.class);
+            verify(cardRepository, times(1)).save(captor.capture());
 
-        assertNotNull(created);
-        assertNull(saved.getId());
+            Card saved = captor.getValue();
 
-        assertEquals(ownerId, saved.getOwnerId());
-        assertArrayEquals(encrypted, saved.getPanEncryptedCard());
-        assertEquals(panHash, saved.getPanHash());
-        assertEquals("1234", saved.getPanLastFourNumber());
+            assertNotNull(created);
+            assertNull(saved.getId());
 
-        // fixedClock = 2026-01-17 => expiryMonth=1, expiryYear=2031
-        assertEquals((short) 1, saved.getExpiryMonth());
-        assertEquals((short) 2031, saved.getExpiryYear());
+            assertEquals(ownerId, saved.getOwnerId());
+            assertArrayEquals(encrypted, saved.getPanEncryptedCard());
+            assertEquals(panHash, saved.getPanHash());
+            assertEquals("1234", saved.getPanLastFourNumber());
 
-        assertEquals(StatusCard.ACTIVE, saved.getStatus());
-        assertEquals(0, saved.getBalance().compareTo(BigDecimal.ZERO));
+            assertEquals((short) 1, saved.getExpiryMonth());
+            assertEquals((short) 2031, saved.getExpiryYear());
 
-        verify(panCryptoService, times(1)).hash(pan);
-        verify(cardRepository, times(1)).existsByPanHash(panHash);
-        verify(panCryptoService, times(1)).encrypt(pan);
+            assertEquals(StatusCard.ACTIVE, saved.getStatus());
+            assertEquals(0, saved.getBalance().compareTo(BigDecimal.ZERO));
+
+            panGeneratorMock.verify(PanGenerator::generate, times(1));
+            verify(panCryptoService, times(1)).hash(pan);
+            verify(cardRepository, times(1)).existsByPanHash(panHash);
+            verify(panCryptoService, times(1)).encrypt(pan);
+        }
     }
 
     @Test
     @DisplayName("Should throw exception when card already exists")
     void shouldThrowExceptionWhenCardAlreadyExists() {
+
         String pan = "4111111111111234";
         String panHash = "hash_pan";
 
-        when(panCryptoService.hash(pan)).thenReturn(panHash);
-        when(cardRepository.existsByPanHash(panHash)).thenReturn(true);
+        try (MockedStatic<PanGenerator> panGeneratorMock = mockStatic(PanGenerator.class)) {
+            panGeneratorMock.when(PanGenerator::generate).thenReturn(pan);
 
-        assertThrows(CardAlreadyExistsException.class, () -> cardService.create(ownerId, pan));
+            when(panCryptoService.hash(pan)).thenReturn(panHash);
+            when(cardRepository.existsByPanHash(panHash)).thenReturn(true);
 
-        verify(panCryptoService, times(1)).hash(pan);
-        verify(cardRepository, times(1)).existsByPanHash(panHash);
-        verify(panCryptoService, never()).encrypt(anyString());
-        verify(cardRepository, never()).save(any(Card.class));
+            assertThrows(CardAlreadyExistsException.class, () -> cardService.create(ownerId));
+
+            panGeneratorMock.verify(PanGenerator::generate, times(1));
+            verify(panCryptoService, times(1)).hash(pan);
+            verify(cardRepository, times(1)).existsByPanHash(panHash);
+            verify(panCryptoService, never()).encrypt(anyString());
+            verify(cardRepository, never()).save(any(Card.class));
+        }
     }
 
     @Test

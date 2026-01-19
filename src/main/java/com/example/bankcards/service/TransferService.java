@@ -25,10 +25,10 @@ public class TransferService {
             throw new InvalidTransferAmountException();
         }
 
-        if (req.fromToCard().equals(req.toCard())){
+        if (req.fromCard().equals(req.toCard())){
             throw new InvalidTransferToSameCardException();
         }
-        Card fromTransfer = cardRepository.findByIdAndOwnerId(req.fromToCard(), ownerId)
+        Card fromTransfer = cardRepository.findByIdAndOwnerId(req.fromCard(), ownerId)
                 .orElseThrow(CardNotFoundException::new);
 
         Card toTransfer = cardRepository.findByIdAndOwnerId(req.toCard(), ownerId)
@@ -36,7 +36,8 @@ public class TransferService {
 
         if(fromTransfer.getStatus() != StatusCard.ACTIVE){
             throw new CardNotActiveException(fromTransfer.getPanLastFourNumber());
-        } else if(toTransfer.getStatus() != StatusCard.ACTIVE){
+        }
+        if(toTransfer.getStatus() != StatusCard.ACTIVE){
             throw new CardNotActiveException(toTransfer.getPanLastFourNumber());
         }
         if (fromTransfer.getBalance().compareTo(req.amount()) < 0) {

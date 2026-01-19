@@ -1,4 +1,4 @@
-package com.example.bankcards.service.crypto;
+package com.example.bankcards.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
