@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminCardController {
+public class AdminCardController implements AdminCardApi{
 
     private final CardService cardService;
 

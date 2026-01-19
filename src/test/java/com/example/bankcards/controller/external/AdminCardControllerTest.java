@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminCardController.class)
 @Import(RestExceptionHandler.class)
 @AutoConfigureMockMvc(addFilters = false) // если у тебя есть Spring Security — это уберёт фильтры в mvc тесте
-class AdminCardControllerTest {
+class AdminCardControllerTest{
 
     @Autowired
     private MockMvc mvc;
