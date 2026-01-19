@@ -3,6 +3,7 @@ package com.example.bankcards.util;
 import java.security.SecureRandom;
 
 public class PanGenerator {
+
     private static final SecureRandom random = new SecureRandom();
 
     public static String generate() {

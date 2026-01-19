@@ -13,14 +13,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
-public class AuthController {
+public class AuthController implements AuthApi{
 
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -34,13 +39,6 @@ public class AuthController {
         this.userService = userService;
     }
 
-    /**
-     * Логин:
-     * 1) проверяем username/password через AuthenticationManager
-     * 2) достаем роли из Authentication (authorities)
-     * 3) достаем userId по username
-     * 4) генерируем JWT, где claim "roles" и "userId"
-     */
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication;
@@ -68,9 +66,6 @@ public class AuthController {
         return new LoginResponse(token, "Bearer");
     }
 
-    /**
-     * "Кто я?" — удобно для фронта
-     */
     @GetMapping("/me")
     public MeResponse me(@AuthenticationPrincipal Jwt jwt) {
         return new MeResponse(
@@ -81,8 +76,7 @@ public class AuthController {
     }
 
     public record LoginRequest(
-            @NotBlank String username,
-            @NotBlank String password
+            @NotBlank String username, @NotBlank String password
     ) {}
 
     public record LoginResponse(String token, String tokenType) {}

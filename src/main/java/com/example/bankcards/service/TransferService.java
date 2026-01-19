@@ -3,7 +3,11 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.TransferRequest;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.enums.StatusCard;
-import com.example.bankcards.exception.*;
+import com.example.bankcards.exception.CardNotActiveException;
+import com.example.bankcards.exception.CardNotFoundException;
+import com.example.bankcards.exception.InsufficientFundsException;
+import com.example.bankcards.exception.InvalidTransferAmountException;
+import com.example.bankcards.exception.InvalidTransferToSameCardException;
 import com.example.bankcards.repository.CardRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +23,7 @@ public class TransferService {
     public TransferService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
     }
+
     @Transactional
     public void transfer(UUID ownerId, TransferRequest req) {
         if (!(req.amount().compareTo(BigDecimal.ZERO) > 0)) {

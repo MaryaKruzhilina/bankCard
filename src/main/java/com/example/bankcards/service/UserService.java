@@ -38,9 +38,11 @@ public class UserService implements UserDetailsService {
                 authorities
         );
     }
+
     public UUID getIdByUsername(String username) {
         return findByUsernameOrThrow(username).getId();
     }
+
     private User findByUsernameOrThrow(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));

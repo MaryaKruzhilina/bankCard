@@ -45,7 +45,6 @@ public class PanCryptoServiceImpl implements PanCryptoService {
 
             byte[] ciphertext = cipher.doFinal(pan.getBytes(StandardCharsets.UTF_8));
 
-            // формат хранения: [iv][ciphertext]
             return ByteBuffer.allocate(iv.length + ciphertext.length)
                     .put(iv)
                     .put(ciphertext)

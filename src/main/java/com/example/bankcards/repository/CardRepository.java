@@ -22,16 +22,13 @@ public interface CardRepository extends JpaRepository<Card,UUID> {
 
     Page<Card> findAllByOwnerId(UUID ownerId, Pageable pageable);
 
-    // с проверкой что пользователь не просто запрашивает карту по id а именно ту что ему принадлежит
     Optional<Card> findByIdAndOwnerId(UUID id, UUID ownerId);
 
-    // Та-же пагинация но + фильтр статуса карты
     Page<Card> findAllByOwnerIdAndStatus(UUID ownerId, StatusCard status, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from Card c where c.id = :id and c.ownerId = :ownerId")
     Optional<Card> findForUpdateByIdAndOwnerId(UUID id, UUID ownerId);
 
-    // Только для Admin. Запрос всех карт по статусу + пагинация
     Page<Card> findAllByStatus(StatusCard status, Pageable pageable);
 }

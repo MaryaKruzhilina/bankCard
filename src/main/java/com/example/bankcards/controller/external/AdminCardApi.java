@@ -18,8 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
-@Tag(name = "AdminCard", description = "Operations related to bank cards")
+@Tag(name = "Admin card", description = "Operations related to bank cards for admin")
 public interface AdminCardApi {
+
     @Operation(summary = "Create card by user ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Card created"),

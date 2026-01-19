@@ -19,6 +19,7 @@ import java.util.UUID;
 
 @Service
 public class CardService {
+
     private static final int CARD_VALID_YEARS = 5;
 
     private final CardRepository cardRepository;
@@ -31,7 +32,6 @@ public class CardService {
         this.clock = clock;
     }
 
-    // admin. создать карту пользователю
     @Transactional
     public Card create(UUID ownerId) {
         String pan = PanGenerator.generate();
@@ -63,26 +63,22 @@ public class CardService {
         return cardRepository.save(card);
     }
 
-    // получить свою карту по id
     @Transactional(readOnly = true)
     public Card getMyById(UUID ownerId, UUID cardId) {
         return cardRepository.findByIdAndOwnerId(cardId, ownerId)
                 .orElseThrow(CardNotFoundException::new);
     }
 
-    // список своих карт (пагинация)
     @Transactional(readOnly = true)
     public Page<Card> getMyCards(UUID ownerId, Pageable pageable) {
         return cardRepository.findAllByOwnerId(ownerId, pageable);
     }
 
-    // список своих карт + фильтр по статусу
     @Transactional(readOnly = true)
     public Page<Card> getMyCardsByStatus(UUID ownerId, StatusCard status, Pageable pageable) {
         return cardRepository.findAllByOwnerIdAndStatus(ownerId, status, pageable);
     }
 
-    // запросить на блокировку
     @Transactional
     public Card blockMyCard(UUID ownerId, UUID cardId) {
         Card card = cardRepository.findByIdAndOwnerId(cardId, ownerId)
@@ -92,7 +88,6 @@ public class CardService {
         return cardRepository.save(card);
     }
 
-    // admin. изменить статус карты
     @Transactional
     public Card adminUpdateStatus(UUID cardId, StatusCard status) {
         Card card = cardRepository.findById(cardId)
@@ -102,7 +97,6 @@ public class CardService {
         return cardRepository.save(card);
     }
 
-    // admin. удалить карту
     @Transactional
     public void adminDelete(UUID cardId) {
         if (!cardRepository.existsById(cardId)) {
@@ -111,7 +105,6 @@ public class CardService {
         cardRepository.deleteById(cardId);
     }
 
-    // admin. Смотреть с фильтром по статусу
     @Transactional(readOnly = true)
     public Page<Card> adminGetAllByStatus(StatusCard status, Pageable pageable) {
         return cardRepository.findAllByStatus(status, pageable);
