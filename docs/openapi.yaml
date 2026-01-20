@@ -1,1 +1,482 @@
-# Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: User card
+  description: Operations related to bank cards for user
+- name: Admin card
+  description: Operations related to bank cards for admin
+- name: Auth
+  description: Authentication endpoints
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Login and get JWT token
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: Token issued
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+        "401":
+          description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /api/cards/transfer:
+    post:
+      tags:
+      - User card
+      summary: Create transfer many if user`s card
+      operationId: transferForMyCard
+      parameters:
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferRequest"
+        required: true
+      responses:
+        "204":
+          description: Transfer was completed
+        "400":
+          description: Invalid transfer request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+        "404":
+          description: Card not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+        "409":
+          description: Transfer cannot be completed due to business rules
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /admin/cards/{userId}:
+    post:
+      tags:
+      - Admin card
+      summary: Create card by user ID
+      operationId: createNewCard
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Card created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardResponse"
+        "409":
+          description: Card already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /api/cards/{cardId}/block:
+    patch:
+      tags:
+      - User card
+      summary: Block set on user`s card by user id
+      operationId: blockMyCard
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Card was blocked
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardResponse"
+        "404":
+          description: Card wasn`t blocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /admin/cards/{cardId}/status:
+    patch:
+      tags:
+      - Admin card
+      summary: Update status card by card ID
+      operationId: updateStatusCard
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: status
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      responses:
+        "200":
+          description: Card status is update
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardResponse"
+        "404":
+          description: Card not found in database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /auth/me:
+    get:
+      tags:
+      - Auth
+      summary: Get current user info from JWT
+      operationId: me
+      responses:
+        "200":
+          description: Ok
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /api/cards:
+    get:
+      tags:
+      - User card
+      summary: Get page user's cards by user id
+      operationId: getMyCards
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Page user card`s  was found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCardResponse"
+  /api/cards/{cardId}:
+    get:
+      tags:
+      - User card
+      summary: Get user's card by card id
+      operationId: getCardById
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: User`s card was found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CardResponse"
+        "404":
+          description: Card wasn`t found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+  /admin/cards:
+    get:
+      tags:
+      - Admin card
+      summary: Get page with list card. Optional filter by status card
+      operationId: getAllByStatus
+      parameters:
+      - name: status
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      - name: page
+        in: query
+        description: Zero-based page index (0..N)
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        description: The size of the page to be returned
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - name: sort
+        in: query
+        description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: Ok
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageCardResponse"
+  /admin/cards/{cardId}:
+    delete:
+      tags:
+      - Admin card
+      summary: Remove card by user ID
+      operationId: deleteCard
+      parameters:
+      - name: cardId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Card removed
+        "404":
+          description: Card not found in database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExceptionResponse"
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+      - username
+    ExceptionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          format: int32
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+    TransferRequest:
+      type: object
+      properties:
+        fromCard:
+          type: string
+          format: uuid
+        toCard:
+          type: string
+          format: uuid
+        amount:
+          type: number
+      required:
+      - amount
+      - fromCard
+      - toCard
+    CardResponse:
+      type: object
+      properties:
+        cardId:
+          type: string
+          format: uuid
+        panMasked:
+          type: string
+        expiryMonth:
+          type: integer
+          format: int32
+        expiryYear:
+          type: integer
+          format: int32
+        statusCard:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+        balance:
+          type: number
+    MeResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        username:
+          type: string
+        roles: {}
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    PageCardResponse:
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CardResponse"
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        empty:
+          type: boolean
+    PageableObject:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: "#/components/schemas/SortObject"
+        paged:
+          type: boolean
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+    SortObject:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
